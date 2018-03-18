@@ -6,18 +6,15 @@ import (
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
-	"golang.org/x/oauth2"
 )
 
 func LoginHandler(c *gin.Context) {
-	fb := NewConfig()
-
 	state := uuid.NewV4().String()
 	session := sessions.Default(c)
 	session.Set("state", state)
 	session.Save()
 
-	url := fb.AuthCodeURL(state, oauth2.AccessTypeOnline)
+	url := GetAuthCodeURL(state)
 	c.Redirect(http.StatusMovedPermanently, url)
 	return
 }

@@ -51,6 +51,12 @@ func NewConfig() *oauth2.Config {
 	return c
 }
 
+func GetAuthCodeURL(state string) string {
+	oc := NewConfig()
+	url := oc.AuthCodeURL(state, oauth2.AccessTypeOnline)
+	return url
+}
+
 type Facebook interface {
 	ExchangeCode(string) (*oauth2.Token, error)
 	GetMe(*oauth2.Token, interface{}) error
