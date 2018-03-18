@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
@@ -60,7 +61,7 @@ type FacebookImpl struct {
 
 func (f *FacebookImpl) ExchangeCode(code string) (*oauth2.Token, error) {
 	oc := NewConfig()
-	tok, err := oc.Exchange(oauth2.NoContext, code)
+	tok, err := oc.Exchange(context.Background(), code)
 	if err != nil {
 		err := errors.Wrap(err, "failed to exchange code.")
 		return nil, err
@@ -74,7 +75,7 @@ func (f *FacebookImpl) ExchangeCode(code string) (*oauth2.Token, error) {
 
 func (f *FacebookImpl) GetMe(tok *oauth2.Token, account interface{}) error {
 	oc := NewConfig()
-	client := oc.Client(oauth2.NoContext, tok)
+	client := oc.Client(context.Background(), tok)
 	url := addAppSecretProofHMAC(fbMeURL, tok.AccessToken)
 
 	resp, err := client.Get(url)
