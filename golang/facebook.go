@@ -65,6 +65,10 @@ func (f *FacebookImpl) ExchangeCode(code string) (*oauth2.Token, error) {
 		err := errors.Wrap(err, "failed to exchange code.")
 		return nil, err
 	}
+	if tok.Valid() == false {
+		err = errors.New("invalid token.")
+		return nil, err
+	}
 	return tok, nil
 }
 
