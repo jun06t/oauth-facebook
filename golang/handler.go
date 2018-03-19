@@ -9,7 +9,9 @@ import (
 )
 
 func LoginHandler(c *gin.Context) {
-	state := uuid.NewV4().String()
+	u4, _ := uuid.NewV4()
+	state := u4.String()
+
 	session := sessions.Default(c)
 	session.Set("state", state)
 	session.Save()
@@ -26,7 +28,7 @@ func CallbackHandler(c *gin.Context) {
 	session := sessions.Default(c)
 	v := session.Get("state")
 
-	err := validateFacebookCode(code, state, v)
+	err := ValidateFacebookCode(code, state, v)
 	if err != nil {
 		c.String(http.StatusBadRequest, "%s", err)
 		return

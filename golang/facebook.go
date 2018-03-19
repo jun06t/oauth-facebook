@@ -36,6 +36,21 @@ func init() {
 	fbClientSecret = os.Getenv("TEST_SECRET")
 }
 
+type facebookError struct {
+	Err facebookErrorDetail `json:"error"`
+}
+
+func (f *facebookError) Error() string {
+	return f.Err.Message
+}
+
+type facebookErrorDetail struct {
+	Code    string `json:"code"`
+	Type    string `json:"type"`
+	Message string `json:"message"`
+	TraceID string `json:"fbtrace_id"`
+}
+
 func NewConfig() *oauth2.Config {
 	c := &oauth2.Config{
 		ClientID:     fbClientID,
@@ -92,13 +107,15 @@ func (f *FacebookImpl) GetMe(tok *oauth2.Token, account interface{}) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 500 {
-		err = errors.New("facebook is unavailable")
-		return err
+		errMsg := &facebookError{}
+		json.NewDecoder(resp.Body).Decode(errMsg)
+		return errors.Wrap(errMsg, "facebook is unavailable.")
 	}
 
 	if resp.StatusCode >= 400 {
-		err = errors.New("facebook request is invalid")
-		return err
+		errMsg := &facebookError{}
+		json.NewDecoder(resp.Body).Decode(errMsg)
+		return errors.Wrap(errMsg, "facebook request is invalid.")
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&account)
@@ -119,7 +136,7 @@ func addAppSecretProofHMAC(url string, accessToken string) string {
 	return url
 }
 
-func validateFacebookCode(code string, state string, v interface{}) (err error) {
+func ValidateFacebookCode(code string, state string, session interface{}) (err error) {
 	if code == "" {
 		err = errors.New("code should be set on query string")
 		return
@@ -130,12 +147,12 @@ func validateFacebookCode(code string, state string, v interface{}) (err error) 
 		return
 	}
 
-	if v == nil {
+	if session == nil {
 		err = errors.New("state hasn't be set")
 		return
 	}
 
-	ss := v.(string)
+	ss := session.(string)
 	if state != ss {
 		err = errors.New("state is invalid")
 		return
