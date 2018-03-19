@@ -16,5 +16,7 @@ func Login(fbs Facebook, code string) (string, error) {
 		return "", err
 	}
 
+	// TODO login by facebook account ID.
+
 	return account.ID, nil
 }

@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"os"
+	"strings"
 
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
@@ -132,7 +133,12 @@ func addAppSecretProofHMAC(url string, accessToken string) string {
 	mac.Write([]byte(accessToken))
 	hash := hex.EncodeToString(mac.Sum(nil))
 
-	url += "?appsecret_proof=" + hash
+	if strings.Contains(url, "?") {
+		url += "&"
+	} else {
+		url += "?"
+	}
+	url += "appsecret_proof=" + hash
 	return url
 }
 
